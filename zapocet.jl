@@ -25,6 +25,13 @@ begin
 	ylabel!("Intensity [counts]")
 end
 
+# ╔═╡ d718f366-8c68-4163-a663-77950ffb9336
+md"""
+# Peak and decay parameters
+The data from about $E = 50\,\mathrm{keV}$ are modelled as the sum
+of a gaussian peak and an exponential decay.
+"""
+
 # ╔═╡ fa694b0a-2a70-4bd1-b477-c0076669d1ad
 begin
 	sel = 51.6 .< E .< 83
@@ -36,7 +43,13 @@ end
 plot(E1, I1, yaxis=:log)
 
 # ╔═╡ 954e9e13-d8e1-4167-8e98-b8ec0aa82706
-md"Fitting the peak"
+md"
+## Peak
+The peak is fitted with a gaussian profile, which in the logarithmic scale
+corresponds to a parabola.
+
+When fitting the peak, operate only on a suitable range of energies.
+"
 
 # ╔═╡ ce0faa6f-80f9-4e3c-9898-44be8449b61d
 begin
@@ -50,7 +63,7 @@ end
 Ipeak_fit(E) = exp(β[1]*E^2 + β[2]E + β[3])
 
 # ╔═╡ c9978a2a-2311-4b82-8f13-808981bbf1b9
-md"Data corrected by subtracting the fitted peak"
+md"Data corrected by subtracting the fitted peak:"
 
 # ╔═╡ e2f9e3a7-51c7-460a-b403-cdea90921733
 begin
@@ -59,7 +72,7 @@ begin
 end
 
 # ╔═╡ 483d357f-dd39-4980-a657-1044bb81faec
-md"Fitting the exponential decay"
+md"Fitting the exponential decay:"
 
 # ╔═╡ d87cd570-fc89-496d-a2fc-68faeccbc8e8
 begin
@@ -82,6 +95,9 @@ begin
 	y[y .< 1] .= 1
 	plot!(Enopeak, y, label="data − peak fit")
 	plot!(Edecay, Idecay_fit.(Edecay), label="decay fit")
+	title!("Peak and decay fit (log scale)")
+	xlabel!("Energy [kEV]")
+	ylabel!("Intensity [counts]")
 end
 
 # ╔═╡ a3b8100d-dcd1-438c-a720-44c7e5cb02e5
@@ -90,6 +106,9 @@ begin
 	plot!(Ipeak_fit, label="peak fit")
 	plot!(Enopeak, Inopeak, label="data − peak fit")
 	plot!(Idecay_fit, label="decay fit")
+	title!("Peak and decay fit")
+	xlabel!("Energy [kEV]")
+	ylabel!("Intensity [counts]")
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -1012,14 +1031,15 @@ version = "0.9.1+5"
 # ╠═ee9013bb-2bef-4f71-8895-ccb415d6dbb5
 # ╠═4aa5a884-47d5-4896-96c7-7d03db531113
 # ╠═4122d827-777a-4729-b924-3a79ee45b5ec
+# ╠═d718f366-8c68-4163-a663-77950ffb9336
 # ╠═fa694b0a-2a70-4bd1-b477-c0076669d1ad
 # ╠═ed3134e9-93ef-4437-8738-b6fe62b5e6d2
-# ╠═954e9e13-d8e1-4167-8e98-b8ec0aa82706
+# ╟─954e9e13-d8e1-4167-8e98-b8ec0aa82706
 # ╠═ce0faa6f-80f9-4e3c-9898-44be8449b61d
 # ╠═67760d58-32e4-4a1f-8780-1606f0579650
-# ╠═c9978a2a-2311-4b82-8f13-808981bbf1b9
+# ╟─c9978a2a-2311-4b82-8f13-808981bbf1b9
 # ╠═e2f9e3a7-51c7-460a-b403-cdea90921733
-# ╠═483d357f-dd39-4980-a657-1044bb81faec
+# ╟─483d357f-dd39-4980-a657-1044bb81faec
 # ╠═d87cd570-fc89-496d-a2fc-68faeccbc8e8
 # ╠═9f2a60d6-7992-4b28-80ba-af69aa254c9b
 # ╠═f956f261-c601-49a4-b271-b8becc61f189
