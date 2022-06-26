@@ -13,24 +13,84 @@ using Plots
 # ╔═╡ 4aa5a884-47d5-4896-96c7-7d03db531113
 begin
 	d = readdlm("data_324985.txt", Float64, skipstart = 1)
-	Eall, Iall = eachcol(d)
-	Eall, Iall
+	E, I = eachcol(d)
+	E, I
 end
 
 # ╔═╡ 4122d827-777a-4729-b924-3a79ee45b5ec
-with() do
-	plot(Eall, Iall)
+begin
+	plot(E, I)
+	title!("Raw data")
+	xlabel!("Energy [keV]")
+	ylabel!("Intensity [counts]")
 end
 
 # ╔═╡ fa694b0a-2a70-4bd1-b477-c0076669d1ad
 begin
-	sel = 50 .< Eall .< 80
-	E = Eall[sel]
-	I = Iall[sel]
+	sel = 51.6 .< E .< 83
+	E1 = E[sel]
+	I1 = I[sel]
 end
 
 # ╔═╡ ed3134e9-93ef-4437-8738-b6fe62b5e6d2
-plot(E, I, yaxis=:log)
+plot(E1, I1, yaxis=:log)
+
+# ╔═╡ 954e9e13-d8e1-4167-8e98-b8ec0aa82706
+md"Fitting the peak"
+
+# ╔═╡ ce0faa6f-80f9-4e3c-9898-44be8449b61d
+begin
+	peaksel = 65 .< E .< 80
+	Epeak = E[peaksel]
+	Ipeak = I[peaksel]
+	β = [Epeak.^2 Epeak ones(size(Epeak))] \ log.(Ipeak)
+end
+
+# ╔═╡ 67760d58-32e4-4a1f-8780-1606f0579650
+Ipeak_fit(E) = exp(β[1]*E^2 + β[2]E + β[3])
+
+# ╔═╡ c9978a2a-2311-4b82-8f13-808981bbf1b9
+md"Data corrected by subtracting the fitted peak"
+
+# ╔═╡ e2f9e3a7-51c7-460a-b403-cdea90921733
+begin
+	Enopeak = E1
+	Inopeak = I1 - Ipeak_fit.(Enopeak)
+end
+
+# ╔═╡ 483d357f-dd39-4980-a657-1044bb81faec
+md"Fitting the exponential decay"
+
+# ╔═╡ d87cd570-fc89-496d-a2fc-68faeccbc8e8
+begin
+	decaysel = Enopeak .< 65
+	Edecay = Enopeak[decaysel]
+	Idecay = Inopeak[decaysel]
+end
+
+# ╔═╡ 9f2a60d6-7992-4b28-80ba-af69aa254c9b
+β_dc = [Edecay ones(size(Edecay))] \ log.(Idecay)
+
+# ╔═╡ f956f261-c601-49a4-b271-b8becc61f189
+Idecay_fit(E) = exp(β_dc[1] * E + β_dc[2])
+
+# ╔═╡ 1d5d7392-7453-4bdf-b9a8-cef4d8a2104b
+begin
+	plot(E1, I1, yaxis=:log10, ylims=[1,310], label="data")
+	plot!(Epeak, Ipeak_fit.(Epeak), label="peak fit")
+	y = copy(Inopeak)
+	y[y .< 1] .= 1
+	plot!(Enopeak, y, label="data − peak fit")
+	plot!(Edecay, Idecay_fit.(Edecay), label="decay fit")
+end
+
+# ╔═╡ a3b8100d-dcd1-438c-a720-44c7e5cb02e5
+begin
+	plot(E1, I1, label="data")
+	plot!(Ipeak_fit, label="peak fit")
+	plot!(Enopeak, Inopeak, label="data − peak fit")
+	plot!(Idecay_fit, label="decay fit")
+end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -954,5 +1014,16 @@ version = "0.9.1+5"
 # ╠═4122d827-777a-4729-b924-3a79ee45b5ec
 # ╠═fa694b0a-2a70-4bd1-b477-c0076669d1ad
 # ╠═ed3134e9-93ef-4437-8738-b6fe62b5e6d2
+# ╠═954e9e13-d8e1-4167-8e98-b8ec0aa82706
+# ╠═ce0faa6f-80f9-4e3c-9898-44be8449b61d
+# ╠═67760d58-32e4-4a1f-8780-1606f0579650
+# ╠═c9978a2a-2311-4b82-8f13-808981bbf1b9
+# ╠═e2f9e3a7-51c7-460a-b403-cdea90921733
+# ╠═483d357f-dd39-4980-a657-1044bb81faec
+# ╠═d87cd570-fc89-496d-a2fc-68faeccbc8e8
+# ╠═9f2a60d6-7992-4b28-80ba-af69aa254c9b
+# ╠═f956f261-c601-49a4-b271-b8becc61f189
+# ╠═1d5d7392-7453-4bdf-b9a8-cef4d8a2104b
+# ╠═a3b8100d-dcd1-438c-a720-44c7e5cb02e5
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
