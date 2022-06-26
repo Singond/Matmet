@@ -111,6 +111,25 @@ begin
 	ylabel!("Intensity [counts]")
 end
 
+# ╔═╡ fa597b6d-4c58-4672-bd8c-849197924c29
+md"# Combined model
+A linear combination of the gaussian peak and the exponential decay."
+
+# ╔═╡ 74106405-ddcd-4dbe-bbb4-d5d81d57c228
+a = [0; 1; 1]
+
+# ╔═╡ 64b061ef-afef-47fe-90bb-3c66ae066e06
+Ifit(E) = a[1] + a[2] * Idecay_fit(E) + a[3] * Ipeak_fit(E)
+
+# ╔═╡ d02dcb3a-c57f-41f3-88e4-b57417a5e94e
+begin
+	plot(E1, I1, label="data")
+	plot!(Ifit, label="fit")
+	title!("Combined fit")
+	xlabel!("Energy [kEV]")
+	ylabel!("Intensity [counts]")
+end
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
@@ -1045,5 +1064,9 @@ version = "0.9.1+5"
 # ╠═f956f261-c601-49a4-b271-b8becc61f189
 # ╠═1d5d7392-7453-4bdf-b9a8-cef4d8a2104b
 # ╠═a3b8100d-dcd1-438c-a720-44c7e5cb02e5
+# ╠═fa597b6d-4c58-4672-bd8c-849197924c29
+# ╠═74106405-ddcd-4dbe-bbb4-d5d81d57c228
+# ╠═64b061ef-afef-47fe-90bb-3c66ae066e06
+# ╠═d02dcb3a-c57f-41f3-88e4-b57417a5e94e
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
