@@ -19,10 +19,10 @@ end
 
 # ╔═╡ 4122d827-777a-4729-b924-3a79ee45b5ec
 begin
-	plot(E, I)
+	plot(E, I, yaxis=:log10, ylims=(1,1e6), yticks=10.0.^(0:6), legend=:none)
 	title!("Raw data")
-	xlabel!("Energy [keV]")
-	ylabel!("Intensity [counts]")
+	xlabel!("Energy E [keV]")
+	ylabel!("Intensity I [counts]")
 end
 
 # ╔═╡ d718f366-8c68-4163-a663-77950ffb9336
@@ -56,14 +56,40 @@ begin
 	peaksel = 65 .< E .< 80
 	Epeak = E[peaksel]
 	Ipeak = I[peaksel]
-	q = [ones(size(Epeak)) Epeak Epeak.^2] \ log.(Ipeak)
 end
+
+# ╔═╡ 598be2fa-c150-467d-9f7b-3a90f65a930d
+md"""
+The intensities are assumed to be Poisson-distributed.
+For each energy, there is only one data point,
+which is assumed to be the sole parameter $\lambda$ of the distribution
+and also its variance $\sigma^2$.
+The standard deviation is thus:
+
+$$\sigma_i = \sqrt{E_i}$$
+"""
+
+# ╔═╡ 7522bc02-b61f-40ac-aa80-bfea125bc620
+σ_Ipeak = sqrt.(Ipeak)
+
+# ╔═╡ 8379f8a4-430f-4791-bbaa-763e15f28f5b
+md"""
+The fitted parameters are:
+"""
+
+# ╔═╡ e4b38b48-c7e2-4cb8-b8cd-fea00a458f8a
+q = [ones(size(Epeak)) Epeak Epeak.^2] \ log.(Ipeak)
 
 # ╔═╡ 67760d58-32e4-4a1f-8780-1606f0579650
 Ipeak_fit(E) = exp(q[1] + q[2]E + q[3]*E^2)
 
-# ╔═╡ c9978a2a-2311-4b82-8f13-808981bbf1b9
-md"Data corrected by subtracting the fitted peak:"
+# ╔═╡ 609ae86e-e4b7-4eb8-a7dc-3c4039eb9210
+md"""
+## Decay
+The decay is modelled as an exponential decrease.
+
+Data corrected by subtracting the fitted peak:
+"""
 
 # ╔═╡ e2f9e3a7-51c7-460a-b403-cdea90921733
 begin
@@ -1055,8 +1081,12 @@ version = "0.9.1+5"
 # ╠═ed3134e9-93ef-4437-8738-b6fe62b5e6d2
 # ╟─954e9e13-d8e1-4167-8e98-b8ec0aa82706
 # ╠═ce0faa6f-80f9-4e3c-9898-44be8449b61d
+# ╟─598be2fa-c150-467d-9f7b-3a90f65a930d
+# ╠═7522bc02-b61f-40ac-aa80-bfea125bc620
+# ╟─8379f8a4-430f-4791-bbaa-763e15f28f5b
+# ╠═e4b38b48-c7e2-4cb8-b8cd-fea00a458f8a
 # ╠═67760d58-32e4-4a1f-8780-1606f0579650
-# ╟─c9978a2a-2311-4b82-8f13-808981bbf1b9
+# ╟─609ae86e-e4b7-4eb8-a7dc-3c4039eb9210
 # ╠═e2f9e3a7-51c7-460a-b403-cdea90921733
 # ╟─483d357f-dd39-4980-a657-1044bb81faec
 # ╠═d87cd570-fc89-496d-a2fc-68faeccbc8e8
