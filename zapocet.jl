@@ -56,11 +56,11 @@ begin
 	peaksel = 65 .< E .< 80
 	Epeak = E[peaksel]
 	Ipeak = I[peaksel]
-	β = [Epeak.^2 Epeak ones(size(Epeak))] \ log.(Ipeak)
+	q = [ones(size(Epeak)) Epeak Epeak.^2] \ log.(Ipeak)
 end
 
 # ╔═╡ 67760d58-32e4-4a1f-8780-1606f0579650
-Ipeak_fit(E) = exp(β[1]*E^2 + β[2]E + β[3])
+Ipeak_fit(E) = exp(q[1] + q[2]E + q[3]*E^2)
 
 # ╔═╡ c9978a2a-2311-4b82-8f13-808981bbf1b9
 md"Data corrected by subtracting the fitted peak:"
@@ -82,10 +82,10 @@ begin
 end
 
 # ╔═╡ 9f2a60d6-7992-4b28-80ba-af69aa254c9b
-β_dc = [Edecay ones(size(Edecay))] \ log.(Idecay)
+p = [ones(size(Edecay)) Edecay] \ log.(Idecay)
 
 # ╔═╡ f956f261-c601-49a4-b271-b8becc61f189
-Idecay_fit(E) = exp(β_dc[1] * E + β_dc[2])
+Idecay_fit(E) = exp(p[1] + p[2] * E)
 
 # ╔═╡ 1d5d7392-7453-4bdf-b9a8-cef4d8a2104b
 begin
