@@ -159,6 +159,53 @@ begin
 	ylabel!("Intensity [counts]")
 end
 
+# ╔═╡ f4e35071-94e9-494f-8c54-2878bc59ff17
+md"""
+## Iterated
+The fitted parameters can now be refined by repeating the above procedure,
+using the newest fit as the starting point when isolating the peak or decay:
+"""
+
+# ╔═╡ ca5f2a97-fda6-46f0-a727-d1e4179ad849
+begin
+	local a_i = copy(a)
+	Ipeak_fits = Function[Ipeak_fit]
+	Idecay_fits = Function[Idecay_fit]
+	Ifits = Function[Ifit]
+	for _ = 1:10
+		# Fit peak
+		Ipeak_i = I1 .- a_i[1] .- a_i[2] .* Idecay_fits[end].(E1)
+		f = Ipeak_i .> 0 .&& E1 .> 65 .&& E1 .< 80
+		Ipeak_i = Ipeak_i[f]
+		Epeak_i = E1[f]
+		q_i = [ones(size(Epeak_i)) Epeak_i Epeak_i.^2] \ log.(Ipeak_i)
+		push!(Ipeak_fits, E -> exp(q_i[1] + q_i[2]*E + q_i[3]*E^2))
+
+		# Fit decay
+		Idecay_i = I1 - Ipeak_fits[end].(E1)
+		f = E1 .< 65
+		Idecay_i = Idecay_i[f]
+		Edecay_i = E1[f]
+		p_i = [ones(size(Edecay_i)) Edecay_i] \ log.(Idecay_i)
+		push!(Idecay_fits, E -> exp(p_i[1] + p_i[2] * E))
+
+		# Combined fit
+		a_i = [ones(size(E1)) Idecay_fits[end].(E1) Ipeak_fits[end].(E1)] \ I1
+		push!(Ifits,
+			E -> a_i[1] + a_i[2] * Idecay_fits[end](E) + a_i[3] * Ipeak_fits[end](E))
+	end
+end
+
+# ╔═╡ 5a2dbf7d-4e5e-45d8-90a4-dbc94a005f8c
+begin
+	plot(E1, I1, label="data")
+	plot!(Ifit, label="fit (first)")
+	plot!(Ifits[end], label="fit (iterated)")
+	title!("Combined fit (iterated)")
+	xlabel!("Energy [kEV]")
+	ylabel!("Intensity [counts]")
+end
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
@@ -1101,5 +1148,8 @@ version = "0.9.1+5"
 # ╠═59c11efb-eb12-4ef5-83cf-0c13c75bcfee
 # ╠═64b061ef-afef-47fe-90bb-3c66ae066e06
 # ╠═d02dcb3a-c57f-41f3-88e4-b57417a5e94e
+# ╠═f4e35071-94e9-494f-8c54-2878bc59ff17
+# ╠═ca5f2a97-fda6-46f0-a727-d1e4179ad849
+# ╠═5a2dbf7d-4e5e-45d8-90a4-dbc94a005f8c
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
