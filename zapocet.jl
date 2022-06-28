@@ -81,7 +81,7 @@ The fitted parameters are:
 q = [ones(size(Epeak)) Epeak Epeak.^2] \ log.(Ipeak)
 
 # ╔═╡ 67760d58-32e4-4a1f-8780-1606f0579650
-Ipeak_fit(E) = exp(q[1] + q[2]E + q[3]*E^2)
+Ipeak_fit(E) = exp(q[1] + q[2]*E + q[3]*E^2)
 
 # ╔═╡ 609ae86e-e4b7-4eb8-a7dc-3c4039eb9210
 md"""
