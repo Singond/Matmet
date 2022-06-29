@@ -7,8 +7,15 @@ using InteractiveUtils
 # ╔═╡ de5795c0-f497-11ec-21c2-ffc3deb3982e
 using DelimitedFiles
 
+# ╔═╡ 72cba3bd-aa1a-4f8b-9b6b-b6ea65317280
+using Latexify
+
 # ╔═╡ ee9013bb-2bef-4f71-8895-ccb415d6dbb5
 using Plots
+
+# ╔═╡ a8dd2c5d-e159-4260-a575-ae8ed147b245
+latexify_md(args...; kwargs...) = Markdown.LaTeX(
+	repr(MIME"text/latex"(), latexify(args...; kwargs...)));
 
 # ╔═╡ 4aa5a884-47d5-4896-96c7-7d03db531113
 begin
@@ -169,6 +176,9 @@ using the newest fit as the starting point when isolating the peak or decay:
 # ╔═╡ ca5f2a97-fda6-46f0-a727-d1e4179ad849
 begin
 	local a_i = copy(a)
+	qq = [q]
+	pp = [p]
+	aa = [a]
 	Ipeak_fits = Function[Ipeak_fit]
 	Idecay_fits = Function[Idecay_fit]
 	Ifits = Function[Ifit]
@@ -179,6 +189,7 @@ begin
 		Ipeak_i = Ipeak_i[f]
 		Epeak_i = E1[f]
 		q_i = [ones(size(Epeak_i)) Epeak_i Epeak_i.^2] \ log.(Ipeak_i)
+		push!(qq, q_i)
 		push!(Ipeak_fits, E -> exp(q_i[1] + q_i[2]*E + q_i[3]*E^2))
 
 		# Fit decay
@@ -187,10 +198,12 @@ begin
 		Idecay_i = Idecay_i[f]
 		Edecay_i = E1[f]
 		p_i = [ones(size(Edecay_i)) Edecay_i] \ log.(Idecay_i)
+		push!(pp, p_i)
 		push!(Idecay_fits, E -> exp(p_i[1] + p_i[2] * E))
 
 		# Combined fit
 		a_i = [ones(size(E1)) Idecay_fits[end].(E1) Ipeak_fits[end].(E1)] \ I1
+		push!(aa, a_i)
 		push!(Ifits,
 			E -> a_i[1] + a_i[2] * Idecay_fits[end](E) + a_i[3] * Ipeak_fits[end](E))
 	end
@@ -206,13 +219,27 @@ begin
 	ylabel!("Intensity [counts]")
 end
 
+# ╔═╡ 79075211-9e11-4b80-8994-f89f32722cae
+md"""
+# Results
+The fitted parameters are:
+
+``q =`` $(latexify_md(qq[end]))
+
+``p =`` $(latexify_md(pp[end]))
+
+``a =`` $(latexify_md(aa[end]))
+"""
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
+Latexify = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 
 [compat]
+Latexify = "~0.15.15"
 Plots = "~1.31.1"
 """
 
@@ -1123,7 +1150,9 @@ version = "0.9.1+5"
 
 # ╔═╡ Cell order:
 # ╠═de5795c0-f497-11ec-21c2-ffc3deb3982e
+# ╠═72cba3bd-aa1a-4f8b-9b6b-b6ea65317280
 # ╠═ee9013bb-2bef-4f71-8895-ccb415d6dbb5
+# ╟─a8dd2c5d-e159-4260-a575-ae8ed147b245
 # ╠═4aa5a884-47d5-4896-96c7-7d03db531113
 # ╠═4122d827-777a-4729-b924-3a79ee45b5ec
 # ╠═d718f366-8c68-4163-a663-77950ffb9336
@@ -1151,5 +1180,6 @@ version = "0.9.1+5"
 # ╠═f4e35071-94e9-494f-8c54-2878bc59ff17
 # ╠═ca5f2a97-fda6-46f0-a727-d1e4179ad849
 # ╠═5a2dbf7d-4e5e-45d8-90a4-dbc94a005f8c
+# ╠═79075211-9e11-4b80-8994-f89f32722cae
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
