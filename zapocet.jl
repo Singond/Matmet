@@ -93,7 +93,8 @@ Ipeak_fit(E) = exp(q[1] + q[2]*E + q[3]*E^2)
 # ╔═╡ 609ae86e-e4b7-4eb8-a7dc-3c4039eb9210
 md"""
 ## Decay
-The decay is modelled as an exponential decrease.
+The decay is modelled as an exponential decrease,
+that is a straight line in logarithmic scale.
 
 Data corrected by subtracting the fitted peak:
 """
