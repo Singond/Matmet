@@ -20,13 +20,13 @@ latexify_md(args...; kwargs...) = Markdown.LaTeX(
 # ╔═╡ 4aa5a884-47d5-4896-96c7-7d03db531113
 begin
 	d = readdlm("data_324985.txt", Float64, skipstart = 1)
-	E, I = eachcol(d)
-	E, I
+	Eall, Iall = eachcol(d)
+	Eall, Iall
 end
 
 # ╔═╡ 4122d827-777a-4729-b924-3a79ee45b5ec
 begin
-	plot(E, I, yaxis=:log10, ylims=(1,1e6), yticks=10.0.^(0:6), legend=:none)
+	plot(Eall, Iall, yaxis=:log10, ylims=(1,1e6), yticks=10.0.^(0:6), legend=:none)
 	title!("Raw data")
 	xlabel!("Energy E [keV]")
 	ylabel!("Intensity I [counts]")
@@ -41,9 +41,9 @@ of a gaussian peak and an exponential decay.
 
 # ╔═╡ fa694b0a-2a70-4bd1-b477-c0076669d1ad
 begin
-	sel = 51.6 .< E .< 83
-	E1 = E[sel]
-	I1 = I[sel]
+	sel = 51.6 .< Eall .< 83
+	E1 = Eall[sel]
+	I1 = Iall[sel]
 end
 
 # ╔═╡ ed3134e9-93ef-4437-8738-b6fe62b5e6d2
@@ -60,9 +60,9 @@ When fitting the peak, operate only on a suitable range of energies.
 
 # ╔═╡ ce0faa6f-80f9-4e3c-9898-44be8449b61d
 begin
-	peaksel = 65 .< E .< 80
-	Epeak = E[peaksel]
-	Ipeak = I[peaksel]
+	peaksel = 65 .< Eall .< 80
+	Epeak = Eall[peaksel]
+	Ipeak = Iall[peaksel]
 end
 
 # ╔═╡ 598be2fa-c150-467d-9f7b-3a90f65a930d
