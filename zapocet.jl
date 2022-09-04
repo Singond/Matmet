@@ -7,6 +7,9 @@ using InteractiveUtils
 # ╔═╡ de5795c0-f497-11ec-21c2-ffc3deb3982e
 using DelimitedFiles
 
+# ╔═╡ 2a28013d-82ee-4ad6-9dd0-ecb36eab99b6
+using LinearAlgebra
+
 # ╔═╡ 72cba3bd-aa1a-4f8b-9b6b-b6ea65317280
 using Latexify
 
@@ -30,6 +33,22 @@ begin
 	title!("Raw data")
 	xlabel!("Energy E [keV]")
 	ylabel!("Intensity I [counts]")
+end
+
+# ╔═╡ 9875c3ce-59a9-40f3-badd-b987b0a8ec1a
+md"""
+# Fit function
+
+Julia has many functions for data fitting, but for educational purposes,
+let's define our own.
+"""
+
+# ╔═╡ da932ee9-61d9-4707-8d13-849e9bb32abd
+function wls(y::Vector{<:AbstractFloat}, X::Matrix{<:AbstractFloat}, w::Vector{<:AbstractFloat} = fill(1.0, size(y)))
+	W = diagm(w)
+	H = X' * W * X
+	C = inv(H)
+	β = C * X' * W * y
 end
 
 # ╔═╡ d718f366-8c68-4163-a663-77950ffb9336
@@ -73,7 +92,12 @@ which is assumed to be the sole parameter $\lambda$ of the distribution
 and also its variance $\sigma^2$.
 The standard deviation is thus:
 
-$$\sigma_i = \sqrt{E_i}$$
+$$\sigma_i = \sqrt{I_i}$$
+
+In the logarithmic scale, the standard deviation is transformed according
+to the law of propagation of uncertainty to:
+
+$$\sigma_{i,\mathrm{log}} = \frac{\sigma_i}{I_i}$$
 """
 
 # ╔═╡ 7522bc02-b61f-40ac-aa80-bfea125bc620
@@ -84,8 +108,17 @@ md"""
 The fitted parameters are:
 """
 
+# ╔═╡ 14f336c8-35bd-47af-8ad9-709f8f7c9fa6
+q = wls(log.(Ipeak), [ones(size(Epeak)) Epeak Epeak.^2], σ_Ipeak./Ipeak)
+
+# ╔═╡ e646db18-4dff-40c8-b1fd-896cbcb4a3f4
+md"""
+For reference, these are the values in the unweighted case
+(ie. ordinary least squares):
+"""
+
 # ╔═╡ e4b38b48-c7e2-4cb8-b8cd-fea00a458f8a
-q = [ones(size(Epeak)) Epeak Epeak.^2] \ log.(Ipeak)
+qo = [ones(size(Epeak)) Epeak Epeak.^2] \ log.(Ipeak)
 
 # ╔═╡ 67760d58-32e4-4a1f-8780-1606f0579650
 Ipeak_fit(E) = exp(q[1] + q[2]*E + q[3]*E^2)
@@ -115,8 +148,19 @@ begin
 	Idecay = Inopeak[decaysel]
 end
 
+# ╔═╡ 5a1e08d3-e698-4de7-90e1-0843db6535c8
+σ_Idecay = sqrt.(Idecay)
+
+# ╔═╡ c8b3064c-b5a6-4156-965d-78d8c7accd18
+p = wls(log.(Idecay), [ones(size(Edecay)) Edecay], σ_Idecay./Idecay)
+
+# ╔═╡ e54f1875-7c2f-4d11-afa2-59e5a5e61575
+md"""
+Again the unweighted case:
+"""
+
 # ╔═╡ 9f2a60d6-7992-4b28-80ba-af69aa254c9b
-p = [ones(size(Edecay)) Edecay] \ log.(Idecay)
+po = [ones(size(Edecay)) Edecay] \ log.(Idecay)
 
 # ╔═╡ f956f261-c601-49a4-b271-b8becc61f189
 Idecay_fit(E) = exp(p[1] + p[2] * E)
@@ -152,16 +196,31 @@ The combined model is a linear combination of the previous two partial models,
 the gaussian peak and the exponential decay.
 """
 
+# ╔═╡ 0f76793f-a025-4cb0-82ca-e4b1515fc9be
+σ_I1 = sqrt.(I1)
+
 # ╔═╡ 59c11efb-eb12-4ef5-83cf-0c13c75bcfee
-a = [ones(size(E1)) Idecay_fit.(E1) Ipeak_fit.(E1)] \ I1
+a = wls(I1, [ones(size(E1)) Idecay_fit.(E1) Ipeak_fit.(E1)], σ_I1)
+
+# ╔═╡ fad02a7b-f2fe-4ce9-8595-3b5ad3f909d9
+md"""
+Unweighted case:
+"""
+
+# ╔═╡ 6427fa75-e80f-4e5b-8a4a-bc3ddde3628b
+ao = [ones(size(E1)) Idecay_fit.(E1) Ipeak_fit.(E1)] \ I1
 
 # ╔═╡ 64b061ef-afef-47fe-90bb-3c66ae066e06
 Ifit(E) = a[1] + a[2] * Idecay_fit(E) + a[3] * Ipeak_fit(E)
+
+# ╔═╡ 75840260-3de0-4882-8ba1-b295dee8ec9e
+Ifit_o(E) = ao[1] + ao[2] * Idecay_fit(E) + ao[3] * Ipeak_fit(E)
 
 # ╔═╡ d02dcb3a-c57f-41f3-88e4-b57417a5e94e
 begin
 	plot(E1, I1, label="data")
 	plot!(Ifit, label="fit")
+	plot!(Ifit_o, label="fit (unweighted)")
 	title!("Combined fit")
 	xlabel!("Energy [kEV]")
 	ylabel!("Intensity [counts]")
@@ -189,7 +248,8 @@ begin
 		f = Ipeak_i .> 0 .&& E1 .> 65 .&& E1 .< 80
 		Ipeak_i = Ipeak_i[f]
 		Epeak_i = E1[f]
-		q_i = [ones(size(Epeak_i)) Epeak_i Epeak_i.^2] \ log.(Ipeak_i)
+		q_i = wls(log.(Ipeak_i), [ones(size(Epeak_i)) Epeak_i Epeak_i.^2],
+			σ_I1[f]./I1[f])
 		push!(qq, q_i)
 		push!(Ipeak_fits, E -> exp(q_i[1] + q_i[2]*E + q_i[3]*E^2))
 
@@ -198,16 +258,18 @@ begin
 		f = E1 .< 65
 		Idecay_i = Idecay_i[f]
 		Edecay_i = E1[f]
-		p_i = [ones(size(Edecay_i)) Edecay_i] \ log.(Idecay_i)
+		p_i = wls(log.(Idecay_i), [ones(size(Edecay_i)) Edecay_i], σ_I1[f]./I1[f])
 		push!(pp, p_i)
 		push!(Idecay_fits, E -> exp(p_i[1] + p_i[2] * E))
 
 		# Combined fit
-		a_i = [ones(size(E1)) Idecay_fits[end].(E1) Ipeak_fits[end].(E1)] \ I1
+		a_i = wls(I1, [ones(size(E1)) Idecay_fits[end].(E1) Ipeak_fits[end].(E1)],
+			σ_I1)
 		push!(aa, a_i)
 		push!(Ifits,
 			E -> a_i[1] + a_i[2] * Idecay_fits[end](E) + a_i[3] * Ipeak_fits[end](E))
 	end
+	0
 end
 
 # ╔═╡ 5a2dbf7d-4e5e-45d8-90a4-dbc94a005f8c
@@ -237,6 +299,7 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 Latexify = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 
 [compat]
@@ -250,7 +313,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.0"
 manifest_format = "2.0"
-project_hash = "65761b4073f9b793edcf44cf3fa0b4a7e93a7447"
+project_hash = "3db114212751e3016ace9b0000e26fd0158b2801"
 
 [[deps.Adapt]]
 deps = ["LinearAlgebra"]
@@ -1171,32 +1234,44 @@ version = "0.9.1+5"
 
 # ╔═╡ Cell order:
 # ╠═de5795c0-f497-11ec-21c2-ffc3deb3982e
+# ╠═2a28013d-82ee-4ad6-9dd0-ecb36eab99b6
 # ╠═72cba3bd-aa1a-4f8b-9b6b-b6ea65317280
 # ╠═ee9013bb-2bef-4f71-8895-ccb415d6dbb5
 # ╟─a8dd2c5d-e159-4260-a575-ae8ed147b245
 # ╠═4aa5a884-47d5-4896-96c7-7d03db531113
 # ╠═4122d827-777a-4729-b924-3a79ee45b5ec
+# ╟─9875c3ce-59a9-40f3-badd-b987b0a8ec1a
+# ╠═da932ee9-61d9-4707-8d13-849e9bb32abd
 # ╠═d718f366-8c68-4163-a663-77950ffb9336
 # ╠═fa694b0a-2a70-4bd1-b477-c0076669d1ad
 # ╠═ed3134e9-93ef-4437-8738-b6fe62b5e6d2
 # ╟─954e9e13-d8e1-4167-8e98-b8ec0aa82706
 # ╠═ce0faa6f-80f9-4e3c-9898-44be8449b61d
-# ╟─598be2fa-c150-467d-9f7b-3a90f65a930d
+# ╠═598be2fa-c150-467d-9f7b-3a90f65a930d
 # ╠═7522bc02-b61f-40ac-aa80-bfea125bc620
 # ╟─8379f8a4-430f-4791-bbaa-763e15f28f5b
+# ╠═14f336c8-35bd-47af-8ad9-709f8f7c9fa6
+# ╟─e646db18-4dff-40c8-b1fd-896cbcb4a3f4
 # ╠═e4b38b48-c7e2-4cb8-b8cd-fea00a458f8a
 # ╠═67760d58-32e4-4a1f-8780-1606f0579650
 # ╟─609ae86e-e4b7-4eb8-a7dc-3c4039eb9210
 # ╠═e2f9e3a7-51c7-460a-b403-cdea90921733
 # ╟─483d357f-dd39-4980-a657-1044bb81faec
 # ╠═d87cd570-fc89-496d-a2fc-68faeccbc8e8
+# ╠═5a1e08d3-e698-4de7-90e1-0843db6535c8
+# ╠═c8b3064c-b5a6-4156-965d-78d8c7accd18
+# ╟─e54f1875-7c2f-4d11-afa2-59e5a5e61575
 # ╠═9f2a60d6-7992-4b28-80ba-af69aa254c9b
 # ╠═f956f261-c601-49a4-b271-b8becc61f189
 # ╠═1d5d7392-7453-4bdf-b9a8-cef4d8a2104b
 # ╠═a3b8100d-dcd1-438c-a720-44c7e5cb02e5
 # ╟─fa597b6d-4c58-4672-bd8c-849197924c29
+# ╠═0f76793f-a025-4cb0-82ca-e4b1515fc9be
 # ╠═59c11efb-eb12-4ef5-83cf-0c13c75bcfee
+# ╠═fad02a7b-f2fe-4ce9-8595-3b5ad3f909d9
+# ╠═6427fa75-e80f-4e5b-8a4a-bc3ddde3628b
 # ╠═64b061ef-afef-47fe-90bb-3c66ae066e06
+# ╠═75840260-3de0-4882-8ba1-b295dee8ec9e
 # ╠═d02dcb3a-c57f-41f3-88e4-b57417a5e94e
 # ╠═f4e35071-94e9-494f-8c54-2878bc59ff17
 # ╠═ca5f2a97-fda6-46f0-a727-d1e4179ad849
