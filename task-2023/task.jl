@@ -107,6 +107,86 @@ begin
 	ylabel!("intenzita I")
 end
 
+# ╔═╡ 1aee8e4f-840f-4177-9988-b6de87d50eb9
+DoF = size(X, 1) - size(X, 2)
+
+# ╔═╡ 1ceff81f-c275-42ce-9965-a0f13b879635
+βcov = r' * W * r * C ./ DoF
+
+# ╔═╡ 90c66f71-1619-42e8-94cc-bdf2e2327e27
+σ = sqrt.(diag(βcov))
+
+# ╔═╡ 08786c77-4328-4d38-ac21-0fee7ba99e8c
+[β σ]
+
+# ╔═╡ f30cfbc8-aba3-48cd-b8e4-8dac8e7270ea
+md"""
+Redukovaný model
+================
+"""
+
+# ╔═╡ 556c9daa-c127-46a2-ae8c-d3a59675084a
+nd = copy(βcov)
+
+# ╔═╡ 5f17ca0b-c905-494a-bc6a-b2599e92a0f1
+nd[diagind(nd)] .= 0
+
+# ╔═╡ 873804ec-aaab-4530-b74b-c1797773b3e2
+_, idx = findmax(abs.(nd))
+
+# ╔═╡ 7ab891a1-794d-4aef-af0c-7293740909e9
+md"""
+Zvolme odstraňovaný parametr:
+"""
+
+# ╔═╡ 2782d797-029c-4bb7-a68d-efa4ed94794a
+rp = idx[1]
+
+# ╔═╡ 9b39ea06-3dc6-4e79-99a6-0b5caced211d
+Xr = X[:, setdiff(1:size(X,2), rp)]
+
+# ╔═╡ d987ad05-5408-442a-9b65-26bb8dc02122
+Hr = Xr' * W * Xr
+
+# ╔═╡ bdb1e68c-a33e-4cee-a9d9-43bf16df91d6
+Cr = inv(Hr)
+
+# ╔═╡ 2e95f59a-0a0f-467d-973d-62f1d4e1a00a
+βr = Cr * Xr' * W * I
+
+# ╔═╡ 60a8073b-2334-4dc0-bc0e-9b7a6daa48c1
+function mr(t)
+	β2 = similar(β)
+	β2[setdiff(1:length(β), rp)] = βr
+	β2[rp] = 0
+	m(t, β2)
+end
+
+# ╔═╡ 31dccc9a-1790-4760-af70-e21b6b5798e7
+begin
+	plot(t, I, label="data")
+	plot!(t, m.(t), label="fit (9 parametrů)")
+	plot!(t, mr.(t), label="fit (8 parametrů)")
+	title!("Porovnání modelů")
+	xlabel!("čas t [s]")
+	ylabel!("intenzita I")
+end
+
+# ╔═╡ bafe7895-b08b-43d4-a764-6027185997d9
+rr = I - Xr * βr
+
+# ╔═╡ c89f7043-f2f5-4d9c-b798-bebc2c4ebb4f
+DoFr = size(Xr, 1) - size(Xr, 2)
+
+# ╔═╡ 9566d934-e274-4841-8cc4-a10ae7084506
+βcovr = rr' * W * rr * Cr./ DoFr
+
+# ╔═╡ d9a5d1e6-9e50-4f57-a8e0-c53a028a4235
+σr = sqrt.(diag(βcovr))
+
+# ╔═╡ 59d86538-98b9-4cc8-ad94-0474f39664b5
+[βr σr]
+
 # ╔═╡ fc25027e-48d3-47cb-8333-8ada2310e733
 md"""
 Určení fáze
@@ -1150,6 +1230,27 @@ version = "1.4.1+0"
 # ╠═789445ff-75df-46c4-8cb1-ca04c15929a4
 # ╠═c9b9c0e6-7677-4450-b681-2f7967f7077c
 # ╠═7c563154-fd30-4e5c-ade3-18f67e3d5a40
+# ╠═1aee8e4f-840f-4177-9988-b6de87d50eb9
+# ╠═1ceff81f-c275-42ce-9965-a0f13b879635
+# ╠═90c66f71-1619-42e8-94cc-bdf2e2327e27
+# ╠═08786c77-4328-4d38-ac21-0fee7ba99e8c
+# ╟─f30cfbc8-aba3-48cd-b8e4-8dac8e7270ea
+# ╠═556c9daa-c127-46a2-ae8c-d3a59675084a
+# ╠═5f17ca0b-c905-494a-bc6a-b2599e92a0f1
+# ╠═873804ec-aaab-4530-b74b-c1797773b3e2
+# ╠═7ab891a1-794d-4aef-af0c-7293740909e9
+# ╠═2782d797-029c-4bb7-a68d-efa4ed94794a
+# ╠═9b39ea06-3dc6-4e79-99a6-0b5caced211d
+# ╠═d987ad05-5408-442a-9b65-26bb8dc02122
+# ╠═bdb1e68c-a33e-4cee-a9d9-43bf16df91d6
+# ╠═2e95f59a-0a0f-467d-973d-62f1d4e1a00a
+# ╠═60a8073b-2334-4dc0-bc0e-9b7a6daa48c1
+# ╠═31dccc9a-1790-4760-af70-e21b6b5798e7
+# ╠═bafe7895-b08b-43d4-a764-6027185997d9
+# ╠═c89f7043-f2f5-4d9c-b798-bebc2c4ebb4f
+# ╠═9566d934-e274-4841-8cc4-a10ae7084506
+# ╠═d9a5d1e6-9e50-4f57-a8e0-c53a028a4235
+# ╠═59d86538-98b9-4cc8-ad94-0474f39664b5
 # ╟─fc25027e-48d3-47cb-8333-8ada2310e733
 # ╠═50c002e2-aef3-473c-962a-1b47962dd1f2
 # ╟─00000000-0000-0000-0000-000000000001
