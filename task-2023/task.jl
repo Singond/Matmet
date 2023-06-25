@@ -13,6 +13,9 @@ using LinearAlgebra
 # ╔═╡ 9ed5888f-e0ac-4a64-ab37-e441e78c901f
 using Printf
 
+# ╔═╡ 0357d66b-161f-49e6-8266-5bfe3c9380b3
+using Statistics
+
 # ╔═╡ 9f50262b-f100-4057-93ab-37261712dec0
 using Plots
 
@@ -22,12 +25,16 @@ Vstupní data
 ============
 Datový soubor `data_324985.txt` obsahuje časový průběh signálu detekovaného
 družicí GRBAlpha.
+Čas označme $t$, intenzitu signálu $I$.
+Protože všechny hodnoty času $t$ jsou velmi vysoké,
+opravme je odečtením střední hodnoty.
 """
 
 # ╔═╡ 253812b5-2e9d-40fd-9a11-ba73c329a82f
 begin
 	d = readdlm("data_324985.txt", Float64, skipstart = 1)
 	t, I = eachcol(d)
+	t .-= mean(t)
 end
 
 # ╔═╡ fcf49d9a-5cd9-4107-9465-018bc6bfc061
@@ -337,6 +344,7 @@ DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
 [compat]
 DelimitedFiles = "~1.9.1"
@@ -349,7 +357,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.9.1"
 manifest_format = "2.0"
-project_hash = "e22c9316abb547c273efd957364a08791d5bd238"
+project_hash = "5e0653aba2ee79f2b59bc59cc480cb3de3920758"
 
 [[deps.ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
@@ -1344,6 +1352,7 @@ version = "1.4.1+0"
 # ╠═90eacba8-0f89-11ee-395f-75ab32794a52
 # ╠═ad6a06e2-6ea4-40d2-9ee1-b93936f88a8c
 # ╠═9ed5888f-e0ac-4a64-ab37-e441e78c901f
+# ╠═0357d66b-161f-49e6-8266-5bfe3c9380b3
 # ╠═9f50262b-f100-4057-93ab-37261712dec0
 # ╟─f8ebf975-57a6-4e03-bc0f-2a2cc349fc36
 # ╠═253812b5-2e9d-40fd-9a11-ba73c329a82f
