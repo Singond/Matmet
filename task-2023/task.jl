@@ -83,8 +83,19 @@ md"""Modelová matice je:"""
 # ╔═╡ aeaf88c8-a977-438e-80a3-fd20137c07d4
 X = [ones(N) t t.^2 ct t .* ct t.^2 .* ct st t .* st t.^2 .* st]
 
+# ╔═╡ 9f8c8578-2e8e-4f78-b900-33b237ad030c
+md"""
+Nejistoty jednotlivých měření nejsou známy, všem tedy přidělíme stejnou váhu.
+Matice vah $W$ je proto jednotková matice:
+"""
+
 # ╔═╡ 3d82b846-ed4b-4b8c-bc00-bb4b219f9d69
 W = diagm(ones(N))
+
+# ╔═╡ b39318d5-05e2-40f3-bbf6-9286cf65995a
+md"""
+Hessián $H$ a kovarianční matice $C$ jsou:
+"""
 
 # ╔═╡ 8874314f-c9cf-46e9-afe1-0a8ef4fb6a2f
 H = X' * W * X
@@ -92,11 +103,27 @@ H = X' * W * X
 # ╔═╡ bc4111fc-d641-406e-986c-b65cf49b23c8
 C = inv(H)
 
+# ╔═╡ 34a8303f-8dde-464b-a067-87ee67973641
+md"""
+Optimální parametry získáme řešením soustavy normálních rovnic:
+"""
+
 # ╔═╡ 96d78af5-030d-4bcf-a2e6-554015b7f788
 β = C * X' * W * I
 
+# ╔═╡ 9a0760f2-3e59-445e-a574-38d4d123c97a
+md"""
+Zde je konkrétní modelová funkce zahrnující optimální parametry
+pro pozdější použití:
+"""
+
 # ╔═╡ 789445ff-75df-46c4-8cb1-ca04c15929a4
 m(t) = m(t, β)
+
+# ╔═╡ daa6ae44-cb7b-43c5-ba62-132d8a48e1a1
+md"""
+Rezidua:
+"""
 
 # ╔═╡ c9b9c0e6-7677-4450-b681-2f7967f7077c
 r = I - X * β
@@ -110,11 +137,36 @@ begin
 	ylabel!("intenzita I")
 end
 
+# ╔═╡ 23f6153e-2f1b-4b86-a952-c8d4bf69dfa0
+md"""
+Určení nejistot
+---------------
+Protože nejistoty nejsou v datech uvedeny, odhadneme je ze sumy čtverců
+reziduí jako:
+
+$$\sigma_I^2 = \frac{1}{D}\sum_i(I_i - m(t_i)),$$
+
+kde $D$ je počet stupňů volnosti modelu:
+"""
+
 # ╔═╡ 1aee8e4f-840f-4177-9988-b6de87d50eb9
 DoF = size(X, 1) - size(X, 2)
 
-# ╔═╡ 1ceff81f-c275-42ce-9965-a0f13b879635
-βcov = r' * W * r * C ./ DoF
+# ╔═╡ af88bd8c-5eb4-4220-9ba7-9801067ca1a7
+σI2 = r' * W * r / DoF
+
+# ╔═╡ 914ae127-e213-4c2d-918a-da300c4cc4f5
+md"""
+Kovarianční matice parametrů je:
+"""
+
+# ╔═╡ c08e77d9-0b66-4f10-b94c-72a5d044a064
+βcov = σI2 * C
+
+# ╔═╡ 8cf86a78-ec3f-4368-8e3e-b509beafd270
+md"""
+Nejistoty parametrů získáme z diagonálních členů kovarianční matice:
+"""
 
 # ╔═╡ 90c66f71-1619-42e8-94cc-bdf2e2327e27
 σ = sqrt.(diag(βcov))
@@ -144,9 +196,6 @@ nd = copy(βcov)
 # ╔═╡ 5f17ca0b-c905-494a-bc6a-b2599e92a0f1
 nd[diagind(nd)] .= 0
 
-# ╔═╡ 644b2582-4fd5-4672-ba5e-157524325e80
-
-
 # ╔═╡ bfc3b2eb-9f47-4676-a209-f324a0a11ee0
 md"""
 Největší nediagonální člen v absolutní hodnotě je na pozici:
@@ -173,7 +222,8 @@ Xr = X[:, setdiff(1:size(X,2), rp)]
 
 # ╔═╡ 1bf4d913-79eb-4e59-a289-dda180e7a9a4
 md"""
-Výpočet optimálních parametrů opakujeme pro takto redukovaný model:
+Výpočet optimálních parametrů opakujeme pro takto redukovaný model.
+Hessián a kovarianční matice jsou:
 """
 
 # ╔═╡ d987ad05-5408-442a-9b65-26bb8dc02122
@@ -184,7 +234,7 @@ Cr = inv(Hr)
 
 # ╔═╡ aa53c15e-6b63-4804-9bf9-eab5a2329bf9
 md"""
-Parametry $\beta_r$ redukovaného modelu jsou:
+Optimální parametry $\beta_r$ redukovaného modelu jsou:
 """
 
 # ╔═╡ 2e95f59a-0a0f-467d-973d-62f1d4e1a00a
@@ -214,8 +264,11 @@ rr = I - Xr * βr
 # ╔═╡ c89f7043-f2f5-4d9c-b798-bebc2c4ebb4f
 DoFr = size(Xr, 1) - size(Xr, 2)
 
-# ╔═╡ 9566d934-e274-4841-8cc4-a10ae7084506
-βcovr = rr' * W * rr * Cr./ DoFr
+# ╔═╡ cb1f4949-3f82-4701-b30d-cccf970978cb
+σI2r = rr' * W * rr / DoFr
+
+# ╔═╡ 3e192f9d-48f6-4645-9aba-98a018bac595
+βcovr = σI2r * Cr
 
 # ╔═╡ d9a5d1e6-9e50-4f57-a8e0-c53a028a4235
 σr = sqrt.(diag(βcovr))
@@ -1306,15 +1359,24 @@ version = "1.4.1+0"
 # ╠═7ccb4359-b0e3-43b3-90ab-f54fae30454d
 # ╟─f58cb088-8acf-48fa-abdc-70b19224f521
 # ╠═aeaf88c8-a977-438e-80a3-fd20137c07d4
+# ╟─9f8c8578-2e8e-4f78-b900-33b237ad030c
 # ╠═3d82b846-ed4b-4b8c-bc00-bb4b219f9d69
+# ╟─b39318d5-05e2-40f3-bbf6-9286cf65995a
 # ╠═8874314f-c9cf-46e9-afe1-0a8ef4fb6a2f
 # ╠═bc4111fc-d641-406e-986c-b65cf49b23c8
+# ╟─34a8303f-8dde-464b-a067-87ee67973641
 # ╠═96d78af5-030d-4bcf-a2e6-554015b7f788
+# ╟─9a0760f2-3e59-445e-a574-38d4d123c97a
 # ╠═789445ff-75df-46c4-8cb1-ca04c15929a4
+# ╟─daa6ae44-cb7b-43c5-ba62-132d8a48e1a1
 # ╠═c9b9c0e6-7677-4450-b681-2f7967f7077c
 # ╠═7c563154-fd30-4e5c-ade3-18f67e3d5a40
+# ╟─23f6153e-2f1b-4b86-a952-c8d4bf69dfa0
 # ╠═1aee8e4f-840f-4177-9988-b6de87d50eb9
-# ╠═1ceff81f-c275-42ce-9965-a0f13b879635
+# ╠═af88bd8c-5eb4-4220-9ba7-9801067ca1a7
+# ╟─914ae127-e213-4c2d-918a-da300c4cc4f5
+# ╠═c08e77d9-0b66-4f10-b94c-72a5d044a064
+# ╟─8cf86a78-ec3f-4368-8e3e-b509beafd270
 # ╠═90c66f71-1619-42e8-94cc-bdf2e2327e27
 # ╟─124a733a-8b7f-4905-8380-b77d2a3eb2b9
 # ╠═08786c77-4328-4d38-ac21-0fee7ba99e8c
@@ -1322,7 +1384,6 @@ version = "1.4.1+0"
 # ╟─500fc1b8-86a0-4989-bdf2-ccef238f9d1f
 # ╠═556c9daa-c127-46a2-ae8c-d3a59675084a
 # ╠═5f17ca0b-c905-494a-bc6a-b2599e92a0f1
-# ╠═644b2582-4fd5-4672-ba5e-157524325e80
 # ╟─bfc3b2eb-9f47-4676-a209-f324a0a11ee0
 # ╠═873804ec-aaab-4530-b74b-c1797773b3e2
 # ╟─7ab891a1-794d-4aef-af0c-7293740909e9
@@ -1338,7 +1399,8 @@ version = "1.4.1+0"
 # ╠═31dccc9a-1790-4760-af70-e21b6b5798e7
 # ╠═bafe7895-b08b-43d4-a764-6027185997d9
 # ╠═c89f7043-f2f5-4d9c-b798-bebc2c4ebb4f
-# ╠═9566d934-e274-4841-8cc4-a10ae7084506
+# ╠═cb1f4949-3f82-4701-b30d-cccf970978cb
+# ╠═3e192f9d-48f6-4645-9aba-98a018bac595
 # ╠═d9a5d1e6-9e50-4f57-a8e0-c53a028a4235
 # ╟─1a1b8e9a-3b88-4cc3-819c-6bab97dbfbf4
 # ╠═59d86538-98b9-4cc8-ad94-0474f39664b5
