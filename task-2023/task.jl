@@ -116,6 +116,11 @@ DoF = size(X, 1) - size(X, 2)
 # ╔═╡ 90c66f71-1619-42e8-94cc-bdf2e2327e27
 σ = sqrt.(diag(βcov))
 
+# ╔═╡ 124a733a-8b7f-4905-8380-b77d2a3eb2b9
+md"""
+Parametry a jejich nejistoty jsou tedy:
+"""
+
 # ╔═╡ 08786c77-4328-4d38-ac21-0fee7ba99e8c
 [β σ]
 
@@ -125,14 +130,27 @@ Redukovaný model
 ================
 """
 
+# ╔═╡ 500fc1b8-86a0-4989-bdf2-ccef238f9d1f
+md"""
+Najděme nejvyšší nediagonální člen korelační matice.
+"""
+
 # ╔═╡ 556c9daa-c127-46a2-ae8c-d3a59675084a
 nd = copy(βcov)
 
 # ╔═╡ 5f17ca0b-c905-494a-bc6a-b2599e92a0f1
 nd[diagind(nd)] .= 0
 
+# ╔═╡ 644b2582-4fd5-4672-ba5e-157524325e80
+
+
+# ╔═╡ bfc3b2eb-9f47-4676-a209-f324a0a11ee0
+md"""
+Největší nediagonální člen v absolutní hodnotě je na pozici:
+"""
+
 # ╔═╡ 873804ec-aaab-4530-b74b-c1797773b3e2
-_, idx = findmax(abs.(nd))
+_, idx = findmax(abs.(nd)); idx
 
 # ╔═╡ 7ab891a1-794d-4aef-af0c-7293740909e9
 md"""
@@ -142,14 +160,29 @@ Zvolme odstraňovaný parametr:
 # ╔═╡ 2782d797-029c-4bb7-a68d-efa4ed94794a
 rp = idx[1]
 
+# ╔═╡ 84194141-cf53-47fe-aad5-1fd6e9752b65
+md"""
+Z modelové matice $S$ tedy odebereme $rp. sloupec:
+"""
+
 # ╔═╡ 9b39ea06-3dc6-4e79-99a6-0b5caced211d
 Xr = X[:, setdiff(1:size(X,2), rp)]
+
+# ╔═╡ 1bf4d913-79eb-4e59-a289-dda180e7a9a4
+md"""
+Výpočet optimálních parametrů opakujeme pro takto redukovaný model:
+"""
 
 # ╔═╡ d987ad05-5408-442a-9b65-26bb8dc02122
 Hr = Xr' * W * Xr
 
 # ╔═╡ bdb1e68c-a33e-4cee-a9d9-43bf16df91d6
 Cr = inv(Hr)
+
+# ╔═╡ aa53c15e-6b63-4804-9bf9-eab5a2329bf9
+md"""
+Parametry $\beta_r$ redukovaného modelu jsou:
+"""
 
 # ╔═╡ 2e95f59a-0a0f-467d-973d-62f1d4e1a00a
 βr = Cr * Xr' * W * I
@@ -184,8 +217,20 @@ DoFr = size(Xr, 1) - size(Xr, 2)
 # ╔═╡ d9a5d1e6-9e50-4f57-a8e0-c53a028a4235
 σr = sqrt.(diag(βcovr))
 
+# ╔═╡ 1a1b8e9a-3b88-4cc3-819c-6bab97dbfbf4
+md"""
+Parametry a nejistoty redukovaného modelu jsou tedy:
+"""
+
 # ╔═╡ 59d86538-98b9-4cc8-ad94-0474f39664b5
 [βr σr]
+
+# ╔═╡ 147ea249-42f3-4a85-a5c9-ce3f06098d07
+md"""
+Fisherův test
+-------------
+Túdú
+"""
 
 # ╔═╡ fc25027e-48d3-47cb-8333-8ada2310e733
 md"""
@@ -1233,16 +1278,23 @@ version = "1.4.1+0"
 # ╠═1aee8e4f-840f-4177-9988-b6de87d50eb9
 # ╠═1ceff81f-c275-42ce-9965-a0f13b879635
 # ╠═90c66f71-1619-42e8-94cc-bdf2e2327e27
+# ╟─124a733a-8b7f-4905-8380-b77d2a3eb2b9
 # ╠═08786c77-4328-4d38-ac21-0fee7ba99e8c
 # ╟─f30cfbc8-aba3-48cd-b8e4-8dac8e7270ea
+# ╟─500fc1b8-86a0-4989-bdf2-ccef238f9d1f
 # ╠═556c9daa-c127-46a2-ae8c-d3a59675084a
 # ╠═5f17ca0b-c905-494a-bc6a-b2599e92a0f1
+# ╠═644b2582-4fd5-4672-ba5e-157524325e80
+# ╟─bfc3b2eb-9f47-4676-a209-f324a0a11ee0
 # ╠═873804ec-aaab-4530-b74b-c1797773b3e2
-# ╠═7ab891a1-794d-4aef-af0c-7293740909e9
+# ╟─7ab891a1-794d-4aef-af0c-7293740909e9
 # ╠═2782d797-029c-4bb7-a68d-efa4ed94794a
+# ╟─84194141-cf53-47fe-aad5-1fd6e9752b65
 # ╠═9b39ea06-3dc6-4e79-99a6-0b5caced211d
+# ╟─1bf4d913-79eb-4e59-a289-dda180e7a9a4
 # ╠═d987ad05-5408-442a-9b65-26bb8dc02122
 # ╠═bdb1e68c-a33e-4cee-a9d9-43bf16df91d6
+# ╟─aa53c15e-6b63-4804-9bf9-eab5a2329bf9
 # ╠═2e95f59a-0a0f-467d-973d-62f1d4e1a00a
 # ╠═60a8073b-2334-4dc0-bc0e-9b7a6daa48c1
 # ╠═31dccc9a-1790-4760-af70-e21b6b5798e7
@@ -1250,7 +1302,9 @@ version = "1.4.1+0"
 # ╠═c89f7043-f2f5-4d9c-b798-bebc2c4ebb4f
 # ╠═9566d934-e274-4841-8cc4-a10ae7084506
 # ╠═d9a5d1e6-9e50-4f57-a8e0-c53a028a4235
+# ╟─1a1b8e9a-3b88-4cc3-819c-6bab97dbfbf4
 # ╠═59d86538-98b9-4cc8-ad94-0474f39664b5
+# ╟─147ea249-42f3-4a85-a5c9-ce3f06098d07
 # ╟─fc25027e-48d3-47cb-8333-8ada2310e733
 # ╠═50c002e2-aef3-473c-962a-1b47962dd1f2
 # ╟─00000000-0000-0000-0000-000000000001
