@@ -10,6 +10,9 @@ using DelimitedFiles
 # ╔═╡ ad6a06e2-6ea4-40d2-9ee1-b93936f88a8c
 using LinearAlgebra
 
+# ╔═╡ 9ed5888f-e0ac-4a64-ab37-e441e78c901f
+using Printf
+
 # ╔═╡ 9f50262b-f100-4057-93ab-37261712dec0
 using Plots
 
@@ -239,6 +242,39 @@ Určení fáze
 """
 
 # ╔═╡ 50c002e2-aef3-473c-962a-1b47962dd1f2
+md"""
+Při sestavování modelu jsme použili substituci:
+
+$$q_4 \cos(\omega x - \phi) = p_4 \cos(\omega x) + p_7 \sin(\omega x).$$
+
+Odtud vyjádříme hledanou fázi jako:
+
+$$\phi = \arctan\frac{p_7}{p_4}.$$
+
+Nejistotu určíme ze zákona šíření nejistot:
+
+$$\sigma_\phi^2 = \left(\frac{\partial\,\phi}{\partial\,p_4}\right)^2 \sigma_{p_4}^2 + \left(\frac{\partial\,\phi}{\partial\,p_7}\right)^2 \sigma_{p_7}^2$$
+"""
+
+# ╔═╡ 6e2e01e4-d78d-40a9-8efc-e3c77c082c32
+ϕ = atan(β[7]/β[4])
+
+# ╔═╡ b581aa9c-c097-442e-b80d-e4a7d87fc683
+sumsq(x) = sum(abs2.(x))
+
+# ╔═╡ 7df32b06-13ec-45ae-9f37-00fe90a1ffad
+dϕdβ4 = -β[7] / (β[4]^2 + β[7]^2)
+
+# ╔═╡ cea4fe29-3a3a-4756-ac59-704390603900
+dϕdβ7 = β[4] / (β[4]^2 + β[7]^2)
+
+# ╔═╡ d979b7ab-8070-40b9-9c74-993eecb8465e
+σϕ = hypot(dϕdβ4 * σ[4], dϕdβ7 * σ[7])
+
+# ╔═╡ 2c8d43fd-3acd-458e-b632-60513078c3f5
+md"""
+Fáze je tedy ($(@sprintf "%.2f +- %.2f" ϕ σϕ)) rad.
+"""
 
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -247,6 +283,7 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
 [compat]
 DelimitedFiles = "~1.9.1"
@@ -259,7 +296,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.9.1"
 manifest_format = "2.0"
-project_hash = "7284f741d6aca1aefb0ebe1d8e635c05fd72eb08"
+project_hash = "e22c9316abb547c273efd957364a08791d5bd238"
 
 [[deps.ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
@@ -1253,6 +1290,7 @@ version = "1.4.1+0"
 # ╔═╡ Cell order:
 # ╠═90eacba8-0f89-11ee-395f-75ab32794a52
 # ╠═ad6a06e2-6ea4-40d2-9ee1-b93936f88a8c
+# ╠═9ed5888f-e0ac-4a64-ab37-e441e78c901f
 # ╠═9f50262b-f100-4057-93ab-37261712dec0
 # ╟─f8ebf975-57a6-4e03-bc0f-2a2cc349fc36
 # ╠═253812b5-2e9d-40fd-9a11-ba73c329a82f
@@ -1306,6 +1344,12 @@ version = "1.4.1+0"
 # ╠═59d86538-98b9-4cc8-ad94-0474f39664b5
 # ╟─147ea249-42f3-4a85-a5c9-ce3f06098d07
 # ╟─fc25027e-48d3-47cb-8333-8ada2310e733
-# ╠═50c002e2-aef3-473c-962a-1b47962dd1f2
+# ╟─50c002e2-aef3-473c-962a-1b47962dd1f2
+# ╠═6e2e01e4-d78d-40a9-8efc-e3c77c082c32
+# ╠═b581aa9c-c097-442e-b80d-e4a7d87fc683
+# ╠═7df32b06-13ec-45ae-9f37-00fe90a1ffad
+# ╠═cea4fe29-3a3a-4756-ac59-704390603900
+# ╠═d979b7ab-8070-40b9-9c74-993eecb8465e
+# ╟─2c8d43fd-3acd-458e-b632-60513078c3f5
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
