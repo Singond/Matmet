@@ -16,8 +16,14 @@ using Printf
 # ╔═╡ 0357d66b-161f-49e6-8266-5bfe3c9380b3
 using Statistics
 
+# ╔═╡ 9663c807-8925-4e42-8e6f-d5ad6022fc96
+using Distributions
+
 # ╔═╡ 9f50262b-f100-4057-93ab-37261712dec0
 using Plots
+
+# ╔═╡ facb7881-0795-4aac-95a8-8c6a7106bdc2
+using StatsBase
 
 # ╔═╡ f8ebf975-57a6-4e03-bc0f-2a2cc349fc36
 md"""
@@ -337,18 +343,124 @@ Fáze je tedy ($(@sprintf "%.2f +- %.2f" ϕ σϕ)) rad.
 """
 
 
+# ╔═╡ 5ecb0983-4c72-4705-85fa-4c04cae428c0
+md"""
+Pearsonův test
+==============
+Na závěr ověřme, zdali mají rezidua normální rozdělení,
+k čemuž použijeme Pearsonův test.
+
+Pozorovaná rezidua nejprve rozdělíme do histogramu o $k$ třídách:
+"""
+
+# ╔═╡ 7ba5668d-ae95-4dc2-87c6-d597a30195bc
+b = fit(Histogram, r, -0.35:0.05:0.3)
+
+# ╔═╡ 2c61821a-84e1-4a18-903f-13712b95e737
+k = length(b.weights)
+
+# ╔═╡ 88ee22cf-803e-48e3-82d0-da582223889d
+md"""
+Hranice jednotlivých intervalů histogramu jsou:
+"""
+
+# ╔═╡ be798907-6c43-48ba-9831-967f6ad9fc40
+edges = b.edges[1]  # For some reason, `b.edges` returns a tuple
+
+# ╔═╡ 6be29bb7-d86c-4eb6-89a9-74575a2525ba
+md"""
+Směrodatná odchylka reziduí je:
+"""
+
+# ╔═╡ 562c18be-ac03-4871-9494-52e193e7d336
+σres = std(r)
+
+# ╔═╡ d87e9f47-0798-44e2-b8c4-5c552b325bb2
+md"""
+Formulujeme tedy nulovou hypotézu, že rezidua mají normální rozdělení
+se střední hodnotou $\mu = 0$ a směrodatnou odchylkou $\sigma_r$.
+
+Spočteme pravděpodobnosti $p_i$, že náhodně zvolené reziduum padne
+do intervalu $i$.
+"""
+
+# ╔═╡ 70982123-070c-4756-8c2d-cb304c6184c3
+normal = Distributions.Normal(0, σres)
+
+# ╔═╡ d1fcbd42-4ee8-40df-8de0-a725fa020618
+md"""
+Hodnoty distribuční funkce v hranicích intervalů histogramu jsou:
+"""
+
+# ╔═╡ 45f425b1-34db-4300-9b00-7b7477870787
+pcum = cdf.(normal, edges)
+
+# ╔═╡ f3e89d6e-81e2-47da-9942-9746146497b5
+md"""
+Odtud vycházejí pravděpodobnosti $p_i$ v jednotlivých intervalech:
+"""
+
+# ╔═╡ 83766b8e-abfb-4cb3-9f5f-4d0b6b508f64
+p = diff(pcum)
+
+# ╔═╡ 3a715e5e-42b3-4cbd-9878-85908242cc46
+with(title="Rozdělení reziduí") do
+	plot(b, label="skutečné")
+	plot!(x -> 0.05N * pdf(normal, x), linewidth=3, label="normální")
+	scatter!(midpoints(b.edges[1]), N * p, color=2, label=:none)
+end
+
+# ╔═╡ f84789d3-05db-402b-9d37-93d67e31e2df
+md"""
+Toto předpokládané rozdělení porovnáme se skutečným pomocí
+Pearsonovy statistiky, jejíž hodnota je:
+"""
+
+# ╔═╡ 63756bb1-3e5c-4363-a77d-baad97435ac9
+T = N * sum(((b.weights ./ N) - p).^2 ./ p)
+
+# ╔═╡ 5a0f4444-7185-4a67-9eec-ddf10155500a
+md"""
+Veličina $T$ má rozdělení $\chi^2$ s $k - r - 1$ stupni volnosti,
+kde $k$ je počet intervalů histogramu a $r$ počet parametrů
+předpokládaného rozdělení.
+Pro zvolené normální rozdělení je $r = 2$,
+tedy počet supňů volnosti je $k - 3$:
+"""
+
+# ╔═╡ c2de0c96-4a18-45b0-a3d1-5354e40ce8a2
+χ2 = Distributions.Chisq(k - 3)
+
+# ╔═╡ 533147be-a4e3-4246-9eb8-843ea5854399
+md"""
+Kritické hodnoty pro hladiny spolehlivosti 90, 95 a 99 % jsou:
+"""
+
+# ╔═╡ 0e73372c-35c9-439c-809e-75b2fde8b3c0
+quantile.(χ2, [0.9, 0.95, 0.99])
+
+# ╔═╡ 1e304ab0-99b5-4922-b8ba-f8596ca1e6ae
+md"""
+Spočtená hodnota $T$ je nižší než kterákoli z těchto hodnot.
+Nulovou hypotézu tedy nemůžeme zamítnout ani na hladině spolehlivosti 90 %.
+"""
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
+Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
+StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 
 [compat]
 DelimitedFiles = "~1.9.1"
+Distributions = "~0.25.96"
 Plots = "~1.38.16"
+StatsBase = "~0.34.0"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -357,7 +469,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.9.1"
 manifest_format = "2.0"
-project_hash = "5e0653aba2ee79f2b59bc59cc480cb3de3920758"
+project_hash = "f18425c64e26fe2f10f58c5fd7f792efc4deef4b"
 
 [[deps.ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
@@ -385,6 +497,12 @@ deps = ["Artifacts", "Bzip2_jll", "CompilerSupportLibraries_jll", "Fontconfig_jl
 git-tree-sha1 = "4b859a208b2397a7a623a03449e4636bdb17bcf2"
 uuid = "83423d85-b0ee-5818-9007-b63ccbeb887a"
 version = "1.16.1+1"
+
+[[deps.Calculus]]
+deps = ["LinearAlgebra"]
+git-tree-sha1 = "f641eb0a4f00c343bbc32346e1217b86f3ce9dad"
+uuid = "49dc2e85-a5d0-5ad3-a950-438e2897f1b9"
+version = "0.5.1"
 
 [[deps.CodecZlib]]
 deps = ["TranscodingStreams", "Zlib_jll"]
@@ -477,6 +595,20 @@ git-tree-sha1 = "9e2f36d3c96a820c678f2f1f1782582fcf685bae"
 uuid = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 version = "1.9.1"
 
+[[deps.Distributions]]
+deps = ["FillArrays", "LinearAlgebra", "PDMats", "Printf", "QuadGK", "Random", "SparseArrays", "SpecialFunctions", "Statistics", "StatsAPI", "StatsBase", "StatsFuns", "Test"]
+git-tree-sha1 = "4ed4a6df2548a72f66e03f3a285cd1f3b573035d"
+uuid = "31c24e10-a181-5473-b8eb-7969acd0382f"
+version = "0.25.96"
+
+    [deps.Distributions.extensions]
+    DistributionsChainRulesCoreExt = "ChainRulesCore"
+    DistributionsDensityInterfaceExt = "DensityInterface"
+
+    [deps.Distributions.weakdeps]
+    ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
+    DensityInterface = "b429d917-457f-4dbc-8f4c-0cc954292b1d"
+
 [[deps.DocStringExtensions]]
 deps = ["LibGit2"]
 git-tree-sha1 = "2fb1e02f2b635d0845df5d7c167fec4dd739b00d"
@@ -487,6 +619,12 @@ version = "0.9.3"
 deps = ["ArgTools", "FileWatching", "LibCURL", "NetworkOptions"]
 uuid = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 version = "1.6.0"
+
+[[deps.DualNumbers]]
+deps = ["Calculus", "NaNMath", "SpecialFunctions"]
+git-tree-sha1 = "5837a837389fccf076445fce071c8ddaea35a566"
+uuid = "fa6b7ba4-c1ee-5f82-b5fc-ecf0adba8f74"
+version = "0.6.8"
 
 [[deps.Expat_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -508,6 +646,12 @@ version = "4.4.2+2"
 
 [[deps.FileWatching]]
 uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
+
+[[deps.FillArrays]]
+deps = ["LinearAlgebra", "Random", "SparseArrays", "Statistics"]
+git-tree-sha1 = "e17cc4dc2d0b0b568e80d937de8ed8341822de67"
+uuid = "1a297f60-69ca-5386-bcde-b61e274b549b"
+version = "1.2.0"
 
 [[deps.FixedPointNumbers]]
 deps = ["Statistics"]
@@ -591,6 +735,12 @@ deps = ["Artifacts", "Cairo_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll",
 git-tree-sha1 = "129acf094d168394e80ee1dc4bc06ec835e510a3"
 uuid = "2e76f6c2-a576-52d4-95c1-20adfe4de566"
 version = "2.8.1+1"
+
+[[deps.HypergeometricFunctions]]
+deps = ["DualNumbers", "LinearAlgebra", "OpenLibm_jll", "SpecialFunctions"]
+git-tree-sha1 = "0ec02c648befc2f94156eaef13b0f38106212f3f"
+uuid = "34004b35-14d8-5ef3-9330-4cdb6864b03a"
+version = "0.3.17"
 
 [[deps.InteractiveUtils]]
 deps = ["Markdown"]
@@ -866,6 +1016,12 @@ deps = ["Artifacts", "Libdl"]
 uuid = "efcefdf7-47ab-520b-bdef-62a2eaa19f15"
 version = "10.42.0+0"
 
+[[deps.PDMats]]
+deps = ["LinearAlgebra", "SparseArrays", "SuiteSparse"]
+git-tree-sha1 = "67eae2738d63117a196f497d7db789821bce61d1"
+uuid = "90014a1f-27ba-587c-ab20-58faa44d9150"
+version = "0.11.17"
+
 [[deps.Parsers]]
 deps = ["Dates", "PrecompileTools", "UUIDs"]
 git-tree-sha1 = "5a6ab2f64388fd1175effdf73fe5933ef1e0bac0"
@@ -942,6 +1098,12 @@ git-tree-sha1 = "0c03844e2231e12fda4d0086fd7cbe4098ee8dc5"
 uuid = "ea2cea3b-5b76-57ae-a6ef-0a8af62496e1"
 version = "5.15.3+2"
 
+[[deps.QuadGK]]
+deps = ["DataStructures", "LinearAlgebra"]
+git-tree-sha1 = "6ec7ac8412e83d57e313393220879ede1740f9ee"
+uuid = "1fd47b50-473d-5c70-9696-f719f8f3bcdc"
+version = "2.8.2"
+
 [[deps.REPL]]
 deps = ["InteractiveUtils", "Markdown", "Sockets", "Unicode"]
 uuid = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
@@ -978,6 +1140,18 @@ deps = ["UUIDs"]
 git-tree-sha1 = "838a3a4188e2ded87a4f9f184b4b0d78a1e91cb7"
 uuid = "ae029012-a4dd-5104-9daa-d747884805df"
 version = "1.3.0"
+
+[[deps.Rmath]]
+deps = ["Random", "Rmath_jll"]
+git-tree-sha1 = "f65dcb5fa46aee0cf9ed6274ccbd597adc49aa7b"
+uuid = "79098fc4-a85e-5d69-aa6a-4863f24498fa"
+version = "0.7.1"
+
+[[deps.Rmath_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
+git-tree-sha1 = "6ed52fdd3382cf21947b15e8870ac0ddbff736da"
+uuid = "f50d1b31-88e8-58de-be2c-1cc44531875f"
+version = "0.4.0+0"
 
 [[deps.SHA]]
 uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
@@ -1044,6 +1218,24 @@ deps = ["DataAPI", "DataStructures", "LinearAlgebra", "LogExpFunctions", "Missin
 git-tree-sha1 = "75ebe04c5bed70b91614d684259b661c9e6274a4"
 uuid = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 version = "0.34.0"
+
+[[deps.StatsFuns]]
+deps = ["HypergeometricFunctions", "IrrationalConstants", "LogExpFunctions", "Reexport", "Rmath", "SpecialFunctions"]
+git-tree-sha1 = "f625d686d5a88bcd2b15cd81f18f98186fdc0c9a"
+uuid = "4c63d2b9-4356-54db-8cca-17b64c39e42c"
+version = "1.3.0"
+
+    [deps.StatsFuns.extensions]
+    StatsFunsChainRulesCoreExt = "ChainRulesCore"
+    StatsFunsInverseFunctionsExt = "InverseFunctions"
+
+    [deps.StatsFuns.weakdeps]
+    ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
+    InverseFunctions = "3587e190-3f89-42d0-90ee-14403ec27112"
+
+[[deps.SuiteSparse]]
+deps = ["Libdl", "LinearAlgebra", "Serialization", "SparseArrays"]
+uuid = "4607b0f0-06f3-5cda-b6b1-a6196a1729e9"
 
 [[deps.SuiteSparse_jll]]
 deps = ["Artifacts", "Libdl", "Pkg", "libblastrampoline_jll"]
@@ -1353,7 +1545,9 @@ version = "1.4.1+0"
 # ╠═ad6a06e2-6ea4-40d2-9ee1-b93936f88a8c
 # ╠═9ed5888f-e0ac-4a64-ab37-e441e78c901f
 # ╠═0357d66b-161f-49e6-8266-5bfe3c9380b3
+# ╠═9663c807-8925-4e42-8e6f-d5ad6022fc96
 # ╠═9f50262b-f100-4057-93ab-37261712dec0
+# ╠═facb7881-0795-4aac-95a8-8c6a7106bdc2
 # ╟─f8ebf975-57a6-4e03-bc0f-2a2cc349fc36
 # ╠═253812b5-2e9d-40fd-9a11-ba73c329a82f
 # ╟─fcf49d9a-5cd9-4107-9465-018bc6bfc061
@@ -1422,5 +1616,26 @@ version = "1.4.1+0"
 # ╠═cea4fe29-3a3a-4756-ac59-704390603900
 # ╠═d979b7ab-8070-40b9-9c74-993eecb8465e
 # ╟─2c8d43fd-3acd-458e-b632-60513078c3f5
+# ╟─5ecb0983-4c72-4705-85fa-4c04cae428c0
+# ╠═7ba5668d-ae95-4dc2-87c6-d597a30195bc
+# ╠═2c61821a-84e1-4a18-903f-13712b95e737
+# ╟─88ee22cf-803e-48e3-82d0-da582223889d
+# ╠═be798907-6c43-48ba-9831-967f6ad9fc40
+# ╟─6be29bb7-d86c-4eb6-89a9-74575a2525ba
+# ╠═562c18be-ac03-4871-9494-52e193e7d336
+# ╟─d87e9f47-0798-44e2-b8c4-5c552b325bb2
+# ╠═70982123-070c-4756-8c2d-cb304c6184c3
+# ╟─d1fcbd42-4ee8-40df-8de0-a725fa020618
+# ╠═45f425b1-34db-4300-9b00-7b7477870787
+# ╟─f3e89d6e-81e2-47da-9942-9746146497b5
+# ╠═83766b8e-abfb-4cb3-9f5f-4d0b6b508f64
+# ╠═3a715e5e-42b3-4cbd-9878-85908242cc46
+# ╟─f84789d3-05db-402b-9d37-93d67e31e2df
+# ╟─63756bb1-3e5c-4363-a77d-baad97435ac9
+# ╟─5a0f4444-7185-4a67-9eec-ddf10155500a
+# ╠═c2de0c96-4a18-45b0-a3d1-5354e40ce8a2
+# ╟─533147be-a4e3-4246-9eb8-843ea5854399
+# ╠═0e73372c-35c9-439c-809e-75b2fde8b3c0
+# ╟─1e304ab0-99b5-4922-b8ba-f8596ca1e6ae
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
