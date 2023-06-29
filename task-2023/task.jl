@@ -200,6 +200,7 @@ Redukovaný model
 
 # ╔═╡ 500fc1b8-86a0-4989-bdf2-ccef238f9d1f
 md"""
+Původní model se pokusíme zjednodušit odebráním jednoho parametru.
 Najděme nejvyšší nediagonální člen korelační matice.
 """
 
@@ -219,7 +220,7 @@ _, idx = findmax(abs.(nd)); idx
 
 # ╔═╡ 7ab891a1-794d-4aef-af0c-7293740909e9
 md"""
-Zvolme odstraňovaný parametr:
+Za odstraňovaný parametr zvolme jedno z těchto čísel:
 """
 
 # ╔═╡ 2782d797-029c-4bb7-a68d-efa4ed94794a
