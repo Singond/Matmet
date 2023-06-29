@@ -299,7 +299,40 @@ Parametry a nejistoty redukovaného modelu jsou tedy:
 md"""
 Fisherův test
 -------------
-Túdú
+Oba modely porovnejme pomocí Fisherova testu.
+Nulová hypotéza tvrdí, že data lépe vystihuje jednodušší model,
+tedy druhý, s osmi parametry.
+Statistika $F$ je dána výrazem:
+
+$$F = \frac{\frac{S_1 - S_2}{p_2 - p_1}}{\frac{S_2}{n - p_2}},$$
+
+kde $S_1$, $S_2$ jsou reziduální sumy čtverců prvního a druhého modelu
+$p_1$, $p_2$ jsou počty parametrů a $N$ je počet datových bodů.
+Její hodnota je:
+"""
+
+# ╔═╡ 971fdc17-25d7-4c5f-923c-eb9d8acbebec
+md"""
+Tuto hodnotu porovnáme s následujícím F-rozdělením:
+"""
+
+# ╔═╡ 30a317c4-3537-423b-86a6-9560f1a018f9
+fdist = Distributions.FDist(9 - 8, N - 9)
+
+# ╔═╡ 8ea974fd-f509-4aad-a6f8-8133c7acc9f4
+md"""
+Kritické hodnoty tohoto rozdělení pro hladiny spolehlivosti
+90, 95 a 99 % jsou:
+"""
+
+# ╔═╡ 37414b60-6db6-44d8-8549-2cd1094829e9
+quantile.(fdist, [0.9, 0.95, 0.99])
+
+# ╔═╡ b987ea4b-74dc-4933-a07d-2cf7c03582b5
+md"""
+Hypotézu o větší vhodnosti jednoduššího modelu tedy můžeme s vysokou
+spolehlivostí zamítnout a dále pokračovat s původním modelem o devíti
+parametrech.
 """
 
 # ╔═╡ fc25027e-48d3-47cb-8333-8ada2310e733
@@ -328,6 +361,9 @@ $$\sigma_\phi^2 = \left(\frac{\partial\,\phi}{\partial\,p_4}\right)^2 \sigma_{p_
 
 # ╔═╡ b581aa9c-c097-442e-b80d-e4a7d87fc683
 sumsq(x) = sum(abs2.(x))
+
+# ╔═╡ 1851550b-af16-45a4-beab-dd8f6c40cbc7
+F = ((sumsq(rr) - sumsq(r)) / (9 - 8)) / (sumsq(r) / (N - 9))
 
 # ╔═╡ 7df32b06-13ec-45ae-9f37-00fe90a1ffad
 dϕdβ4 = -β[7] / (β[4]^2 + β[7]^2)
@@ -1609,6 +1645,12 @@ version = "1.4.1+0"
 # ╟─1a1b8e9a-3b88-4cc3-819c-6bab97dbfbf4
 # ╠═59d86538-98b9-4cc8-ad94-0474f39664b5
 # ╟─147ea249-42f3-4a85-a5c9-ce3f06098d07
+# ╠═1851550b-af16-45a4-beab-dd8f6c40cbc7
+# ╟─971fdc17-25d7-4c5f-923c-eb9d8acbebec
+# ╠═30a317c4-3537-423b-86a6-9560f1a018f9
+# ╟─8ea974fd-f509-4aad-a6f8-8133c7acc9f4
+# ╠═37414b60-6db6-44d8-8549-2cd1094829e9
+# ╟─b987ea4b-74dc-4933-a07d-2cf7c03582b5
 # ╟─fc25027e-48d3-47cb-8333-8ada2310e733
 # ╟─50c002e2-aef3-473c-962a-1b47962dd1f2
 # ╠═6e2e01e4-d78d-40a9-8efc-e3c77c082c32
