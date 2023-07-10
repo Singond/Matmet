@@ -386,6 +386,8 @@ Pearsonův test
 ==============
 Na závěr ověřme, zdali mají rezidua normální rozdělení,
 k čemuž použijeme Pearsonův test.
+Provedeme jej na původním modelu,
+který jsme na základě Fisherova testu nezamítli.
 
 Pozorovaná rezidua nejprve rozdělíme do histogramu o $k$ třídách:
 """
