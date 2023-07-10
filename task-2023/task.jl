@@ -99,7 +99,8 @@ X = [ones(N) t t.^2 ct t .* ct t.^2 .* ct st t .* st t.^2 .* st]
 # ╔═╡ 9f8c8578-2e8e-4f78-b900-33b237ad030c
 md"""
 Nejistoty jednotlivých měření nejsou známy, všem tedy přidělíme stejnou váhu.
-Matice vah $W$ je proto jednotková matice:
+Ve výpočtu bychom mohli v takovém případě matici vah $W$ zcela vynechat,
+ale pro obecnost ji ponechme a nastavme ji na jednotkovou matici:
 """
 
 # ╔═╡ 3d82b846-ed4b-4b8c-bc00-bb4b219f9d69
