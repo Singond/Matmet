@@ -450,7 +450,12 @@ end
 # ╔═╡ f84789d3-05db-402b-9d37-93d67e31e2df
 md"""
 Toto předpokládané rozdělení porovnáme se skutečným pomocí
-Pearsonovy statistiky, jejíž hodnota je:
+Pearsonovy statistiky, která je dána vztahem:
+
+$$T = N \sum_i \frac{(\frac{o_i}{N} - p_i)^2}{p_i},$$
+
+kde $o_i$ je četnost pozorovaná v intervalu $i$.
+Výsledná hodnota Pearsonovy statistiky činí:
 """
 
 # ╔═╡ 63756bb1-3e5c-4363-a77d-baad97435ac9
@@ -1674,7 +1679,7 @@ version = "1.4.1+0"
 # ╠═83766b8e-abfb-4cb3-9f5f-4d0b6b508f64
 # ╠═3a715e5e-42b3-4cbd-9878-85908242cc46
 # ╟─f84789d3-05db-402b-9d37-93d67e31e2df
-# ╟─63756bb1-3e5c-4363-a77d-baad97435ac9
+# ╠═63756bb1-3e5c-4363-a77d-baad97435ac9
 # ╟─5a0f4444-7185-4a67-9eec-ddf10155500a
 # ╠═c2de0c96-4a18-45b0-a3d1-5354e40ce8a2
 # ╟─533147be-a4e3-4246-9eb8-843ea5854399
