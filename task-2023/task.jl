@@ -354,7 +354,7 @@ $$\phi = \arctan\frac{p_7}{p_4}.$$
 
 Nejistotu určíme ze zákona šíření nejistot:
 
-$$\sigma_\phi^2 = \left(\frac{\partial\,\phi}{\partial\,p_4}\right)^2 \sigma_{p_4}^2 + \left(\frac{\partial\,\phi}{\partial\,p_7}\right)^2 \sigma_{p_7}^2$$
+$$\sigma_\phi^2 = \left(\frac{\partial\phi}{\partial p_4}\right)^2 \sigma_{p_4}^2 + \left(\frac{\partial\phi}{\partial p_7}\right)^2 \sigma_{p_7}^2 + 2\left(\frac{\partial\phi}{\partial p_4}\right) \left(\frac{\partial\phi}{\partial p_7}\right) \sigma_{p_4, p_7}$$
 """
 
 # ╔═╡ 6e2e01e4-d78d-40a9-8efc-e3c77c082c32
@@ -372,8 +372,21 @@ dϕdβ4 = -β[7] / (β[4]^2 + β[7]^2)
 # ╔═╡ cea4fe29-3a3a-4756-ac59-704390603900
 dϕdβ7 = β[4] / (β[4]^2 + β[7]^2)
 
+# ╔═╡ 9ca05e04-80b4-4894-b276-cefa4da3c3a8
+md"""
+Kovariance parametrů $p_4$ a $p_7$ je:
+"""
+
+# ╔═╡ 59ba1af5-d1e2-44c5-b89b-025bd5409ffb
+βcov[4,7]
+
+# ╔═╡ 00bea699-7915-42d5-a13b-1602d17d5c94
+md"""
+Výsledná nejistota fáze je:
+"""
+
 # ╔═╡ d979b7ab-8070-40b9-9c74-993eecb8465e
-σϕ = hypot(dϕdβ4 * σ[4], dϕdβ7 * σ[7])
+σϕ = sqrt(dϕdβ4^2 * σ[4]^2 + dϕdβ7^2 * σ[7]^2 + 2 * dϕdβ4 * dϕdβ7 * βcov[4,7])
 
 # ╔═╡ 2c8d43fd-3acd-458e-b632-60513078c3f5
 md"""
@@ -1665,6 +1678,9 @@ version = "1.4.1+0"
 # ╠═b581aa9c-c097-442e-b80d-e4a7d87fc683
 # ╠═7df32b06-13ec-45ae-9f37-00fe90a1ffad
 # ╠═cea4fe29-3a3a-4756-ac59-704390603900
+# ╟─9ca05e04-80b4-4894-b276-cefa4da3c3a8
+# ╠═59ba1af5-d1e2-44c5-b89b-025bd5409ffb
+# ╟─00bea699-7915-42d5-a13b-1602d17d5c94
 # ╠═d979b7ab-8070-40b9-9c74-993eecb8465e
 # ╟─2c8d43fd-3acd-458e-b632-60513078c3f5
 # ╟─5ecb0983-4c72-4705-85fa-4c04cae428c0
